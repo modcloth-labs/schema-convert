@@ -60,17 +60,50 @@ public class PostgresTableConverter {
 
         // TODO handle multi-column indexes, LOL!
         for (IndexDefinition i : tableDefinition.getIndexDefinitions()) {
-            if (i.getName() != null && !i.getName().equals("PRIMARY") && i.getSequenceNumber() != null && i.getSequenceNumber().equals(1)) {
-                StringBuilder createStmt = new StringBuilder("CREATE ");
-
-                if (i.getIsUnique()) {
-                    createStmt.append("UNIQUE ");
+            if (i.getName() != null) {
+                if (i.getName().equals("PRIMARY")) {
+                    createStmts.add(createPrimaryKeyStatement(tableDefinition, i));
+                } else if (i.getSequenceNumber() != null && i.getSequenceNumber().equals(1)) {
+                    createStmts.add(createIndexStatement(tableDefinition, i));
                 }
-                createStmts.add(createStmt.append("INDEX ").append(i.getName()).append(" ON ").
-                        append( tableDefinition.getName()).append(" ("+ i.getColumnName() + ")").toString());
             }
         }
         return createStmts;
+    }
+
+    /**
+     * Build the syntactically-correct ALTER TABLE statement to add a PRIMARY KEY
+     * to the given table in PostgreSQL.
+     * 
+     * @param tableDefinition represents the schema definition of the table
+     * @param indexDefinition represents the schema definition of the primary index
+     * @return the SQL statement to create the primary key
+     */
+    public String createPrimaryKeyStatement(TableDefinition tableDefinition, IndexDefinition indexDefinition) {
+        StringBuilder stmt = new StringBuilder("ALTER TABLE ");
+
+        stmt.append(tableDefinition.getName()).append(" ADD PRIMARY KEY (").
+                append(indexDefinition.getColumnName()).append(")");
+        return stmt.toString();
+    }
+
+    /**
+     * Build the syntactically-correct CREATE INDEX statement to add an index
+     * to a column in the given table in PostgreSQL.
+     * 
+     * @param tableDefinition represents the schema definition of the table
+     * @param indexDefinition represents the schema definition of the index
+     * @return the SQL statement to create the index
+     */
+    public String createIndexStatement(TableDefinition tableDefinition, IndexDefinition indexDefinition) {
+        StringBuilder stmt = new StringBuilder("CREATE ");
+
+        if (indexDefinition.getIsUnique()) {
+            stmt.append("UNIQUE ");
+        }
+        stmt.append("INDEX ").append(indexDefinition.getName()).append(" ON ").append(tableDefinition.getName()).
+                append(" (").append(indexDefinition.getColumnName()).append(")");
+        return stmt.toString();
     }
 
     /**
