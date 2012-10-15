@@ -31,7 +31,7 @@ public class OptionParser {
     @Option(name="--use-small-ints", usage="Convert MySQL TINYINT to PG SMALLINT (default is BOOLEAN)")
     private boolean tinyIntToSmallInt;
 
-    @Option(name="--delete-tables", usage="Delete existing tables in destination database (deafult: false)")
+    @Option(name="--delete-tables", usage="Delete existing tables in destination database (default: false)")
     private boolean deleteAllTables;
 
     @Argument

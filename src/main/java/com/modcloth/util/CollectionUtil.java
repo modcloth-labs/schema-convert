@@ -20,6 +20,10 @@ public class CollectionUtil {
     public static String join(Collection<? extends Object> collection, String delimiter) {
         final StringBuilder result = new StringBuilder();
 
+        if (delimiter == null) {
+            delimiter = "";
+        }
+
         if (collection != null) {
             int counter = 0;
 

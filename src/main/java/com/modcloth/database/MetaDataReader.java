@@ -42,7 +42,7 @@ public class MetaDataReader {
      */
     public List<TableDefinition> read() {
         final List<TableDefinition> tableDefinitions = new LinkedList<TableDefinition>();
-        Connection connection = connectionManager.openConnection();
+        final Connection connection = connectionManager.openConnection();
 
         if (connection != null) {
             DatabaseMetaData metaData = null;
@@ -58,15 +58,16 @@ public class MetaDataReader {
                 }
             } catch (SQLException sqe) {
                 System.out.println("Error: " + sqe.getMessage());
+            } finally {
                 try {
-                    if (resultSet != null) {
+                    if (resultSet != null && !resultSet.isClosed()) {
                         resultSet.close();
                     }
                 } catch (SQLException sqe1) {
                     System.out.println("Error: " + sqe1.getMessage());
                 }
+                connectionManager.closeConnection(connection);              
             }
-            connectionManager.closeConnection(connection);
         }
         return tableDefinitions;
     }

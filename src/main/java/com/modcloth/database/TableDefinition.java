@@ -192,7 +192,12 @@ public class TableDefinition {
          * @return the column's default value
          */
         public String getDefaultValue() {
-            return defaultValue;
+            String tempDefault = null;
+
+            if (defaultValue != null && !defaultValue.equals("")) {
+                tempDefault = defaultValue;
+            }
+            return tempDefault;
         }
 
         /**

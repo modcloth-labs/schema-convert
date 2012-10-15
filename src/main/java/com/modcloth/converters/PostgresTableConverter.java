@@ -46,7 +46,7 @@ public class PostgresTableConverter {
             createStatements.add(new PostgresColumnConverter(cd).convert());
         }
         statement.append(CollectionUtil.join(createStatements, ",\n"));
-        return statement.append(");\n").toString();
+        return statement.append(")\n").toString();
     }
 
     /**
@@ -79,7 +79,7 @@ public class PostgresTableConverter {
      * @param indexDefinition represents the schema definition of the primary index
      * @return the SQL statement to create the primary key
      */
-    public String createPrimaryKeyStatement(TableDefinition tableDefinition, IndexDefinition indexDefinition) {
+    private String createPrimaryKeyStatement(TableDefinition tableDefinition, IndexDefinition indexDefinition) {
         StringBuilder stmt = new StringBuilder("ALTER TABLE ");
 
         stmt.append(tableDefinition.getName()).append(" ADD PRIMARY KEY (").
@@ -95,7 +95,7 @@ public class PostgresTableConverter {
      * @param indexDefinition represents the schema definition of the index
      * @return the SQL statement to create the index
      */
-    public String createIndexStatement(TableDefinition tableDefinition, IndexDefinition indexDefinition) {
+    private String createIndexStatement(TableDefinition tableDefinition, IndexDefinition indexDefinition) {
         StringBuilder stmt = new StringBuilder("CREATE ");
 
         if (indexDefinition.getIsUnique()) {
@@ -132,10 +132,6 @@ public class PostgresTableConverter {
             } else {
                 definition.append(" ").append(typeToString()).append(sizeToString());
                 definition.append(isNullableToString()).append(defaultToString());
-            }
-            if (tableDefinition.getSurrogateKeyName() != null &&
-                    tableDefinition.getSurrogateKeyName().equals(columnDefinition.getName())) {
-                definition.append(" PRIMARY KEY");
             }
             return definition.toString();
         }
