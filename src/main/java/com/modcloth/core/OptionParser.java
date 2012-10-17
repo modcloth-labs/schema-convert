@@ -26,6 +26,12 @@ public class OptionParser {
 
     @Option(name="--key-pattern", usage="Pattern for matching table surrogate keys", metaVar="PATTERN")
     private String surrogateKeyPattern;
+
+    @Option(name="--tables-only", usage="Create only tables (no indexes)")
+    private boolean tablesOnly;
+
+    @Option(name="--indexes-only", usage="Create only indexes (no tables)")
+    private boolean indexesOnly;
  
     // TODO make me work
     @Option(name="--use-small-ints", usage="Convert MySQL TINYINT to PG SMALLINT (default is BOOLEAN)")
@@ -41,6 +47,8 @@ public class OptionParser {
      * Default constructor
      */
     public OptionParser() {
+        tablesOnly = false;
+        indexesOnly = false;
         tinyIntToSmallInt = false;
         deleteAllTables = false;
     }
@@ -71,6 +79,9 @@ public class OptionParser {
             }
             if (surrogateKeyPattern == null || surrogateKeyPattern.equals("")) {
                 throw new CmdLineException(parser, "No surrogate key pattern was given");
+            }
+            if (tablesOnly && indexesOnly) {
+                throw new CmdLineException(parser, "Cannot specify both index-only and table-only");
             }
         } catch(CmdLineException cle) {
             System.err.println(cle.getMessage());
@@ -107,6 +118,20 @@ public class OptionParser {
      */
     public String getKeyPattern() {
         return surrogateKeyPattern;
+    }
+
+    /**
+     * @return the flag that indicates whether tables only should be created
+     */
+    public boolean getTablesOnly() {
+        return tablesOnly;
+    }
+
+    /**
+     * @return the flag that indicates whether indexes only should be created
+     */
+    public boolean getIndexesOnly() {
+        return indexesOnly;
     }
 
     /**
