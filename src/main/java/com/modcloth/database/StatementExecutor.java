@@ -39,14 +39,14 @@ public class StatementExecutor {
                 statement = connection.createStatement();
                 statement.execute(sqlStatement);
             } catch (SQLException sqe) {
-                System.out.println("Error: " + sqe.getMessage());
+                System.err.println("Error: " + sqe.getMessage());
             } finally {
                 try {
                     if (statement != null && !statement.isClosed()) {
                         statement.close();
                     }
                 } catch (SQLException sqe) {
-                    System.out.println("Error: " + sqe.getMessage());
+                    System.err.println("Error: " + sqe.getMessage());
                 }
                 connectionManager.closeConnection(connection);
             }

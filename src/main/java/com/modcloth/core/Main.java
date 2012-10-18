@@ -89,6 +89,8 @@ public class Main {
 
         for (TableDefinition t: tableDefinitions) {
             if (tableNames.contains(t.getName())) {
+                System.out.println("Building index for " + t.getName());
+
                 for (String s : t.toPostgresIndexSyntax()) {
                     new StatementExecutor(connectionManager).executeStatement(s);
                 }

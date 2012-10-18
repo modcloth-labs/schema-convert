@@ -57,14 +57,14 @@ public class MetaDataReader {
                             resultSet.getString("TABLE_NAME")).read());
                 }
             } catch (SQLException sqe) {
-                System.out.println("Error: " + sqe.getMessage());
+                System.err.println("Error: " + sqe.getMessage());
             } finally {
                 try {
                     if (resultSet != null && !resultSet.isClosed()) {
                         resultSet.close();
                     }
                 } catch (SQLException sqe1) {
-                    System.out.println("Error: " + sqe1.getMessage());
+                    System.err.println("Error: " + sqe1.getMessage());
                 }
                 connectionManager.closeConnection(connection);              
             }
@@ -122,7 +122,7 @@ public class MetaDataReader {
                             resultSet.getInt("ORDINAL_POSITION")));
                 }
             } catch (SQLException sqe) {
-                System.out.println("Error: " + sqe.getMessage());
+                System.err.println("Error: " + sqe.getMessage());
             }
             return tableDefinition;
         }

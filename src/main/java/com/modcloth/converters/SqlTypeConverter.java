@@ -41,7 +41,7 @@ public class SqlTypeConverter {
                 map.put((Integer) fields[i].get(null), fields[i].getName());
             }
         } catch (IllegalAccessException iae) {
-            System.out.println("Error: " + iae.getMessage());
+            System.err.println("Error: " + iae.getMessage());
         }
         return map;
     }

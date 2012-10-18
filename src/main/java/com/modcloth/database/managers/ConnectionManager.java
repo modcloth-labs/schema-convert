@@ -29,14 +29,14 @@ public class ConnectionManager {
             Class.forName(driverName);
             connection = DriverManager.getConnection(connectionUrl);
         } catch (Exception e) {
-            System.out.println("Error: " + e.getMessage());
+            System.err.println("Error: " + e.getMessage());
             try {
                 if (connection != null) {
                     connection.close();
                     connection = null;
                 }
             } catch (SQLException sqe) {
-                System.out.println("Error: " + sqe.getMessage());
+                System.err.println("Error: " + sqe.getMessage());
             }
         }
         return connection;
@@ -52,7 +52,7 @@ public class ConnectionManager {
             try {
                 connection.close();
             } catch (SQLException sqe) {
-                System.out.println("Error: " + sqe.getMessage());
+                System.err.println("Error: " + sqe.getMessage());
             }
         }
     }
