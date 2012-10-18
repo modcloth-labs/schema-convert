@@ -3,11 +3,14 @@ package com.modcloth.converters;
 import java.sql.Types;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
 
 import com.modcloth.database.TableDefinition;
 import com.modcloth.database.TableDefinition.ColumnDefinition;
 import com.modcloth.database.TableDefinition.IndexDefinition;
-import com.modcloth.util.CollectionUtil;
+
 
 /**
  * Uses a TableDefinition to generate SQL a 'CREATE TABLE' statement for a
@@ -45,7 +48,7 @@ public class PostgresTableConverter {
         for (ColumnDefinition cd : tableDefinition.getColumnDefinitions()) {
             createStatements.add(new PostgresColumnConverter(cd).convert());
         }
-        statement.append(CollectionUtil.join(createStatements, ",\n"));
+        statement.append(StringUtils.join(createStatements, ",\n"));
         return statement.append(")\n").toString();
     }
 
@@ -57,15 +60,13 @@ public class PostgresTableConverter {
      */
     public List<String> convertToCreateIndex() {
         final List<String> createStmts = new LinkedList<String>();
+        final Map<String, List<IndexDefinition>> indexes = tableDefinition.getIndexesByName();
 
-        // TODO handle multi-column indexes, LOL!
-        for (IndexDefinition i : tableDefinition.getIndexDefinitions()) {
-            if (i.getName() != null) {
-                if (i.getName().equals("PRIMARY")) {
-                    createStmts.add(createPrimaryKeyStatement(tableDefinition, i));
-                } else if (i.getSequenceNumber() != null && i.getSequenceNumber().equals(1)) {
-                    createStmts.add(createIndexStatement(tableDefinition, i));
-                }
+        for (String i : indexes.keySet()) {
+            if (i.equals("PRIMARY")) {
+                createStmts.add(createPrimaryKeyStatement(tableDefinition, indexes.get(i)));
+            } else {
+                createStmts.add(createIndexStatement(tableDefinition, indexes.get(i)));
             }
         }
         return createStmts;
@@ -76,14 +77,18 @@ public class PostgresTableConverter {
      * to the given table in PostgreSQL.
      * 
      * @param tableDefinition represents the schema definition of the table
-     * @param indexDefinition represents the schema definition of the primary index
+     * @param indexDefinitions the the list of schema definitions of the primary index
      * @return the SQL statement to create the primary key
      */
-    private String createPrimaryKeyStatement(TableDefinition tableDefinition, IndexDefinition indexDefinition) {
+    private String createPrimaryKeyStatement(TableDefinition tableDefinition, List<IndexDefinition> indexDefinitions) {
         StringBuilder stmt = new StringBuilder("ALTER TABLE ");
+        List<String> columnNames = new LinkedList<String>();
 
+        for (IndexDefinition i : indexDefinitions) {
+            columnNames.add(i.getColumnName());
+        }
         stmt.append(tableDefinition.getName()).append(" ADD PRIMARY KEY (").
-                append(indexDefinition.getColumnName()).append(")");
+                append(StringUtils.join(columnNames, ',')).append(")");
         return stmt.toString();
     }
 
@@ -92,17 +97,22 @@ public class PostgresTableConverter {
      * to a column in the given table in PostgreSQL.
      * 
      * @param tableDefinition represents the schema definition of the table
-     * @param indexDefinition represents the schema definition of the index
+     * @param indexDefinitions the list of schema definitions of the index
      * @return the SQL statement to create the index
      */
-    private String createIndexStatement(TableDefinition tableDefinition, IndexDefinition indexDefinition) {
+    private String createIndexStatement(TableDefinition tableDefinition, List<IndexDefinition> indexDefinitions) {
         StringBuilder stmt = new StringBuilder("CREATE ");
+        List<String> columnNames = new LinkedList<String>();
 
-        if (indexDefinition.getIsUnique()) {
+        for (IndexDefinition i : indexDefinitions) {
+            columnNames.add(i.getColumnName());
+        }
+
+        if (indexDefinitions.get(0).getIsUnique()) {
             stmt.append("UNIQUE ");
         }
-        stmt.append("INDEX ").append(indexDefinition.getName()).append(" ON ").append(tableDefinition.getName()).
-                append(" (").append(indexDefinition.getColumnName()).append(")");
+        stmt.append("INDEX ").append(indexDefinitions.get(0).getName()).append(" ON ").append(tableDefinition.getName()).
+                append(" (").append(StringUtils.join(columnNames, ',')).append(")");
         return stmt.toString();
     }
 

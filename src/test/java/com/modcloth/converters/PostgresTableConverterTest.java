@@ -5,8 +5,10 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
 import java.sql.Types;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -22,17 +24,19 @@ import com.modcloth.database.TableDefinition.IndexDefinition;
 public class PostgresTableConverterTest {
     private PostgresTableConverter converter;
     private List<ColumnDefinition> columns;
-    private List<IndexDefinition> indexes;
+    private List<IndexDefinition> sortedIndexes;
+    private Map<String, List<IndexDefinition>> indexes;
 
     @Mock private TableDefinition table;
 
     @Before public void setUp() {
         columns = new LinkedList<ColumnDefinition>();
-        indexes = new LinkedList<IndexDefinition>();
+        sortedIndexes = new LinkedList<IndexDefinition>();
+        indexes = new HashMap<String, List<IndexDefinition>>();
 
         when(table.getName()).thenReturn("test_table");
         when(table.getColumnDefinitions()).thenReturn(columns);
-        when(table.getIndexDefinitions()).thenReturn(indexes);
+        when(table.getIndexesByName()).thenReturn(indexes);
 
         converter = new PostgresTableConverter(table);
     }
@@ -66,22 +70,25 @@ public class PostgresTableConverterTest {
     }
 
     @Test public void convertPrimaryIndexTest() {
-        indexes.add(new IndexDefinition("PRIMARY", "id", false, 1));
+        indexes.put("PRIMARY", sortedIndexes);
+        indexes.get("PRIMARY").add(new IndexDefinition("PRIMARY", "id", false, 1));
 
         assertArrayEquals(converter.convertToCreateIndex().toArray(new String[0]),
             new String[] {"ALTER TABLE test_table ADD PRIMARY KEY (id)"});
     }
 
     @Test public void convertMultiColumnIndex() {
-        indexes.add(new IndexDefinition("idx_one", "column_one", true, 1));
-        indexes.add(new IndexDefinition("idx_two", "column_two", true, 2));
+        indexes.put("idx_one", sortedIndexes);
+        indexes.get("idx_one").add(new IndexDefinition("idx_one", "column_one", true, 1));
+        indexes.get("idx_one").add(new IndexDefinition("idx_two", "column_two", true, 2));
 
         assertArrayEquals(converter.convertToCreateIndex().toArray(new String[0]),
-            new String[] {"CREATE INDEX idx_one ON test_table (column_one)"});
+            new String[] {"CREATE INDEX idx_one ON test_table (column_one,column_two)"});
     }
 
     @Test public void convertUniqueIndex() {
-        indexes.add(new IndexDefinition("idx_one", "column_one", false, 1));
+        indexes.put("idx_one", sortedIndexes);
+        indexes.get("idx_one").add(new IndexDefinition("idx_one", "column_one", false, 1));
 
         assertArrayEquals(converter.convertToCreateIndex().toArray(new String[0]),
             new String[] {"CREATE UNIQUE INDEX idx_one ON test_table (column_one)"});

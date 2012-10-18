@@ -1,7 +1,11 @@
 package com.modcloth.database;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 import com.modcloth.converters.PostgresTableConverter;
@@ -48,6 +52,65 @@ public class TableDefinition {
      */
     public List<IndexDefinition> getIndexDefinitions() {
         return indexDefinitions;
+    }
+
+    /**
+     * Builds the list of indexes into a map containing the index name as a key
+     * and the list of index-column sequences as the value.
+     * 
+     * @return the map of indexes
+     */
+    public Map<String, List<IndexDefinition>> getIndexesByName() {
+        Map<String, List<IndexDefinition>> indexes = new HashMap<String, List<IndexDefinition>>();
+
+        for (IndexDefinition i : getIndexDefinitions()) {
+            if (i.getName() != null) {
+                indexes.put(i.getName(), getIndexAsMultiColumnIndex(i.getName()));
+            }
+        }
+        return indexes;
+    }
+
+    /**
+     * Returns the list of IndexDefinitions that match the given name. If no IndexDefinition is found
+     * that matches the indexName, an empty list is returned. If multiple IndexDefinitions are found
+     * that match the indexName, they are returned sorted by their sequence number.
+     * 
+     * @param indexName the name of the index for which to search
+     * @return the sorted list of IndexDefinitions
+     */
+    public List<IndexDefinition> getIndexAsSortedMultiColumnIndex(String indexName) {
+        List<IndexDefinition> multiColumnIndex = getIndexAsMultiColumnIndex(indexName);
+
+        Collections.sort(multiColumnIndex, new Comparator<IndexDefinition>() {
+            public int compare(IndexDefinition left, IndexDefinition right) {
+                if (left.getSequenceNumber() == right.getSequenceNumber()) {
+                    return 0;
+                }
+                return left.getSequenceNumber() < right.getSequenceNumber() ? -1 : 1;
+            }
+        });
+
+        return multiColumnIndex;
+    }
+
+    /**
+     * Returns the list of IndexDefinitions that match the given name. If no IndexDefinition is found
+     * that matches the indexName, returns an empty list. The order of the returned IndexDefinitions is
+     * not guaranteed.
+     * 
+     * @param indexName the name of the index for which to search
+     * @return the list of IndexDefinitions
+     */
+    public List<IndexDefinition> getIndexAsMultiColumnIndex(String indexName) {
+        List<IndexDefinition> multiColumnIndex = new LinkedList<IndexDefinition>();
+
+        for (IndexDefinition i : getIndexDefinitions()) {
+            if (i.getName() != null && i.getName().equals(indexName)) {
+                multiColumnIndex.add(i);
+            }
+        }
+        return multiColumnIndex;
     }
 
     /**
