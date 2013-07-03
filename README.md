@@ -1,5 +1,7 @@
 # schema-convert
 
+[![Build Status](https://travis-ci.org/modcloth-labs/schema-convert.png?branch=master)](https://travis-ci.org/modcloth-labs/schema-convert)
+
 Things it does when converting:
 
 1. recreate structure in postgres (w/ primary keys and appropriate column types)
