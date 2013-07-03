@@ -1,2 +1,5 @@
 language: java
-
+notifications:
+  email:
+    recipients:
+      - p.bair@modcloth.com
